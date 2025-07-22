@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated # Import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated 
 
 from .models import Order, OrderItem
 from .permissions import (
@@ -17,18 +17,16 @@ from .serializers import (
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
-    """
-    CRUD order items that are associated with the current order id.
-    """
+   
 
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
-    permission_classes = [IsAuthenticated, IsOrderItemByBuyerOrAdmin] # Add IsAuthenticated
+    permission_classes = [IsAuthenticated, IsOrderItemByBuyerOrAdmin]
 
     def get_queryset(self):
         res = super().get_queryset()
         order_id = self.kwargs.get("order_pk")
-        # Ensure the order belongs to the current user or user is admin
+      
         user = self.request.user
         if user.is_staff:
              return res.filter(order__id=order_id)
@@ -37,12 +35,12 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         order = get_object_or_404(Order, id=self.kwargs.get("order_id"))
-        # Ensure the order belongs to the current user or user is admin before creating item
+        
         user = self.request.user
         if user.is_staff or order.buyer == user:
             serializer.save(order=order)
         else:
-            from rest_framework.exceptions import PermissionDenied # Import PermissionDenied
+            from rest_framework.exceptions import PermissionDenied 
             raise PermissionDenied("You do not have permission to add items to this order.")
 
 
@@ -54,12 +52,9 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    """
-    CRUD orders of a user
-    """
-
+ 
     queryset = Order.objects.all()
-    permission_classes = [IsAuthenticated, IsOrderByBuyerOrAdmin] # Add IsAuthenticated
+    permission_classes = [IsAuthenticated, IsOrderByBuyerOrAdmin]
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update", "destroy"):
@@ -70,7 +65,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         res = super().get_queryset()
         user = self.request.user
-        # Allow admins to see all orders
+        
         if user.is_staff:
             return res
         return res.filter(buyer=user)
