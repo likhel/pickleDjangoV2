@@ -3,7 +3,7 @@ from .models import Order, OrderItem
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    extra = 0 # Don't show extra blank forms
+    extra = 0 
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'buyer', 'status', 'total_cost', 'created_at')
