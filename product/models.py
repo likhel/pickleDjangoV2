@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings  # Import settings to get the AUTH_USER_MODEL
-from user.models import CustomUser # Assuming your CustomUser is here
+from django.conf import settings  
+from user.models import CustomUser 
 from PIL import Image
 
 class ProductCategory(models.Model):
@@ -11,7 +11,7 @@ class ProductCategory(models.Model):
         return self.name
 
 class Product(models.Model):
-    # Add a foreign key to the CustomUser model to represent the seller
+  
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='products')
 
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, related_name='products')
@@ -31,13 +31,13 @@ class Product(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Save the product first
+        super().save(*args, **kwargs)  
 
         if self.image:
             img = Image.open(self.image.path)
 
-            # Resize the image while maintaining aspect ratio
-            max_size = (800, 800)  # Set your desired max size
+            
+            max_size = (800, 800) 
             img.thumbnail(max_size, Image.LANCZOS)
 
-            img.save(self.image.path)  # Save the resized image back
+            img.save(self.image.path)  
