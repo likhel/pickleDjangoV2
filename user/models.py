@@ -12,11 +12,10 @@ from rest_framework.exceptions import NotAcceptable
 from django.utils.translation import gettext as _
 from django_countries.fields import CountryField
 from django.contrib.auth.models import AbstractUser
-from phonenumber_field.modelfields import PhoneNumberField # Import PhoneNumberField
+from phonenumber_field.modelfields import PhoneNumberField 
 
 
 
-# Assuming you have a CustomUser model as discussed earlier
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('buyer', 'Buyer'),
@@ -27,8 +26,8 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
 
     USERNAME_FIELD = 'email'
-    # Add username to REQUIRED_FIELDS as it's removed from USERNAME_FIELD
-    REQUIRED_FIELDS = ['username'] # Include any other required fields here
+
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         swappable = 'AUTH_USER_MODEL'
@@ -40,7 +39,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatar', blank=True)
     bio = models.CharField(max_length=200, blank=True)
-    phone_number = PhoneNumberField(blank=True, null=True) # Added phone_number field
+    phone_number = PhoneNumberField(blank=True, null=True) 
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -76,12 +75,11 @@ class Address(models.Model):
     def __str__(self):
         return self.user.get_full_name()
 
-# Updated SellerProfile model with all necessary fields
 class SellerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="seller_profile", on_delete=models.CASCADE)
     business_name = models.CharField(max_length=255)
     business_type = models.CharField(max_length=100, blank=True)
-    business_registration_number = models.CharField(max_length=100, blank=True, null=True) # Optional
+    business_registration_number = models.CharField(max_length=100, blank=True, null=True)
     tax_identification_number = models.CharField(max_length=100, blank=True)
 
     # Bank Account Details
@@ -101,7 +99,7 @@ class SellerProfile(models.Model):
     shipping_policy = models.TextField(blank=True)
     return_policy = models.TextField(blank=True)
 
-    is_verified = models.BooleanField(default=False) # To indicate if the seller is verified
+    is_verified = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
