@@ -6,16 +6,14 @@ from .serializers import ProductReadSerializer, ProductWriteSerializer, ProductC
 from .permissions import IsSellerOrReadOnly
 
 class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    List and Retrieve product categories
-    """
+
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
     permission_classes = (permissions.AllowAny,)
 
 
 class ProductPagination(PageNumberPagination):
-    page_size = 10  # Number of items per page
+    page_size = 10  
     page_size_query_param = 'page_size'
     max_page_size = 100
 
@@ -28,8 +26,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     pagination_class = ProductPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'description', 'ingredients']  # Fields to search within
-    ordering_fields = ['name', 'price', 'created_at']  # Fields to order by
+    search_fields = ['name', 'description', 'ingredients']  
+    ordering_fields = ['name', 'price', 'created_at'] 
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
