@@ -6,12 +6,9 @@ from .models import Product, ProductCategory
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = "__all__"  # You can specify specific fields if needed
-
+        fields = "__all__" 
 class ProductReadSerializer(serializers.ModelSerializer):
-    """
-    Serializer class for reading products
-    """
+  
     seller = serializers.CharField(source="seller.get_full_name", read_only=True)
     category = serializers.CharField(source="category.name", read_only=True)
 
@@ -41,9 +38,7 @@ class ProductReadSerializer(serializers.ModelSerializer):
         )
 
 class ProductWriteSerializer(serializers.ModelSerializer):
-    """
-    Serializer class for writing products
-    """
+   
     seller = serializers.HiddenField(default=serializers.CurrentUserDefault())
     category = ProductCategorySerializer()
 
