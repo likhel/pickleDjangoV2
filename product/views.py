@@ -1,6 +1,7 @@
 from rest_framework import permissions, viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, ProductCategory
 from .serializers import ProductReadSerializer, ProductWriteSerializer, ProductCategorySerializer
 from .permissions import IsSellerOrReadOnly
@@ -12,6 +13,8 @@ class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
     permission_classes = (permissions.AllowAny,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['category_type']
 
 
 class ProductPagination(PageNumberPagination):
@@ -27,9 +30,10 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     queryset = Product.objects.all()
     pagination_class = ProductPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description', 'ingredients']  # Fields to search within
     ordering_fields = ['name', 'price', 'created_at']  # Fields to order by
+    filterset_fields = ['categories__name', 'categories__category_type']
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:

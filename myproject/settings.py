@@ -173,7 +173,7 @@ REST_AUTH = {
     # 'LOGIN_SERIALIZER': 'user.serializers.UserLoginSerializer', # Remove this line
     'USER_DETAILS_SERIALIZER': 'user.serializers.UserSerializer',
     # 'JWT_AUTH_COOKIE': 'my-app-auth', # Optional: Use a cookie for JWT
-    'JWT_AUTH_REFRESH_COOKIE': 'my-refresh-token', # Optional: Use a cookie for refresh token
+    'JWT_AUTH_REFRESH_COOKIE': 'my-refresh-token', 
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {

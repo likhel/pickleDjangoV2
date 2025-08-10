@@ -5,16 +5,23 @@ from PIL import Image
 
 class ProductCategory(models.Model):
     name = models.CharField(max_length=255)
+    CATEGORY_TYPES = [
+ ('ingredient', 'Ingredient Type'),
+ ('flavor', 'Flavor Type'),
+ ('style', 'Preparation Style'),
+ ('packaging', 'Packaging Type'),
+ ]
     slug = models.SlugField(unique=True)
+    category_type = models.CharField(max_length=50, choices=CATEGORY_TYPES, default='ingredient' )
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_category_type_display()})"
 
 class Product(models.Model):
     # Add a foreign key to the CustomUser model to represent the seller
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='products')
 
-    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, related_name='products')
+    categories = models.ManyToManyField(ProductCategory, related_name='products') # Changed from ForeignKey to ManyToManyField
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     description = models.TextField()

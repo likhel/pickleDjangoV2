@@ -12,11 +12,10 @@ from rest_framework.exceptions import NotAcceptable
 from django.utils.translation import gettext as _
 from django_countries.fields import CountryField
 from django.contrib.auth.models import AbstractUser
-from phonenumber_field.modelfields import PhoneNumberField # Import PhoneNumberField
+from phonenumber_field.modelfields import PhoneNumberField 
 
 
 
-# Assuming you have a CustomUser model as discussed earlier
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('buyer', 'Buyer'),
@@ -24,18 +23,18 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='buyer')
-    email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
+    email = models.EmailField(_("email address"), unique=True, blank=False, null=False)
 
     USERNAME_FIELD = 'email'
-    # Add username to REQUIRED_FIELDS as it's removed from USERNAME_FIELD
-    REQUIRED_FIELDS = ['username'] # Include any other required fields here
+    
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         swappable = 'AUTH_USER_MODEL'
 
 User = get_user_model()
 
-# Profile model with added phone_number field
+
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatar', blank=True)
@@ -76,7 +75,7 @@ class Address(models.Model):
     def __str__(self):
         return self.user.get_full_name()
 
-# Updated SellerProfile model with all necessary fields
+
 class SellerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="seller_profile", on_delete=models.CASCADE)
     business_name = models.CharField(max_length=255)
@@ -84,12 +83,12 @@ class SellerProfile(models.Model):
     business_registration_number = models.CharField(max_length=100, blank=True, null=True) # Optional
     tax_identification_number = models.CharField(max_length=100, blank=True)
 
-    # Bank Account Details
+  
     bank_name = models.CharField(max_length=255, blank=True)
     bank_account_number = models.CharField(max_length=255, blank=True)
     bank_account_holder_name = models.CharField(max_length=255, blank=True)
 
-    # Business Contact and Address
+    
     business_phone_number = PhoneNumberField(blank=True, null=True)
     business_email = models.EmailField(max_length=255, blank=True)
     business_country = CountryField(blank=True, null=True)
@@ -97,11 +96,11 @@ class SellerProfile(models.Model):
     business_street = models.CharField(max_length=255, blank=True)
     business_postal_code = models.CharField(max_length=20, blank=True)
 
-    # Seller Policies
+    
     shipping_policy = models.TextField(blank=True)
     return_policy = models.TextField(blank=True)
 
-    is_verified = models.BooleanField(default=False) # To indicate if the seller is verified
+    is_verified = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -13,7 +13,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'product', 'quantity', 'cost')
-    list_filter = ('order__status', 'product__category')
+    list_filter = ('order__status', 'product__categories__name')
     search_fields = ('order__buyer__username', 'product__name')
 
 

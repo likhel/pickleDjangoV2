@@ -4,10 +4,10 @@ from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import gettext as _
 
 from rest_framework import serializers
-from .models import SellerProfile # Import SellerProfile
+from .models import SellerProfile
 from phonenumber_field.serializerfields import PhoneNumberField
 from django_countries.serializers import CountryFieldMixin
-from django_countries.serializer_fields import CountryField  # Import CountryField directly from django_countries
+from django_countries.serializer_fields import CountryField  
 from django.db import transaction
 
 from .exceptions import (
@@ -21,15 +21,13 @@ User = get_user_model()
 
 
 class UserRegistrationSerializer(RegisterSerializer):
-    """
-    Serializer for registering new users using email or phone number.
-    """
+  
 
     username = None
     first_name = serializers.CharField(required=True, write_only=True)
     last_name = serializers.CharField(required=True, write_only=True)
     email = serializers.EmailField(required=True)
-    phone_number = serializers.CharField(required=False, write_only=True)
+    phone_number = serializers.CharField(required=False,allow_blank=True, write_only=True)
 
     def validate(self, validated_data):
         email = validated_data.get("email", None)
@@ -57,7 +55,9 @@ class UserRegistrationSerializer(RegisterSerializer):
 
         # Save phone number to Profile model
         phone_number = validated_data.get("phone_number")
-        if phone_number:
+        if phone_number == "":
+           phone_number = None
+        if phone_number is not None:
             Profile.objects.update_or_create(user=user, defaults={"phone_number": phone_number})
 
     def custom_signup(self, request, user):
@@ -66,16 +66,16 @@ class UserRegistrationSerializer(RegisterSerializer):
 
 class SellerProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer for the SellerProfile model.
+    
     Used for nested serialization in seller registration and for managing seller profiles.
     """
-    # Explicitly define fields for clarity and control
+    
     business_phone_number = PhoneNumberField(required=False, allow_null=True)
     business_country = CountryField(required=False, allow_null=True)
 
     class Meta:
         model = SellerProfile
-        # Include all fields from the SellerProfile model
+        
         fields = [
             'business_name',
             'business_type',
@@ -92,34 +92,30 @@ class SellerProfileSerializer(serializers.ModelSerializer):
             'business_postal_code',
             'shipping_policy',
             'return_policy',
-            'is_verified', # Include if you want to expose this in the API (usually not writable by seller)
+            'is_verified', 
         ]
-        # Optionally make some fields read-only, e.g., after initial setup
         read_only_fields = ['is_verified']
 
 
 class SellerRegistrationSerializer(serializers.Serializer):
-    """
-    Serializer for seller registration.
-    Handles creating a user and their associated SellerProfile.
-    """
-    # Basic user fields (adjust based on what you need for seller signup)
+    
+   
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
 
-    # Nested SellerProfile serializer
+    
     seller_profile = SellerProfileSerializer()
 
     def validate_email(self, value):
-        # Check if a user with this email already exists
+        
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(_("User with this email already exists."))
         return value
 
     def create(self, validated_data):
-        with transaction.atomic(): # Use transaction for atomicity
+        with transaction.atomic(): 
             seller_profile_data = validated_data.pop('seller_profile')
 
             # Create the user with 'seller' role
@@ -128,45 +124,33 @@ class SellerRegistrationSerializer(serializers.Serializer):
                 password=validated_data['password'],
                 first_name=validated_data['first_name'],
                 last_name=validated_data['last_name'],
-                role='seller' # Set the role to 'seller'
+                role='seller' 
             )
 
-            # Create the seller profile linked to the user
+            
             SellerProfile.objects.create(user=user, **seller_profile_data)
 
-        return user # Return the created user
+        return user 
 
-    # You might add an update method if you allow users to transition from buyer to seller
+    #  add an update method if you allow users to transition from buyer to seller
     # def update(self, instance, validated_data):
     #     # Handle updating user and creating/updating seller profile
     #     pass
 
 
 class UserLoginSerializer(serializers.Serializer):
-    """
-    Serializer to login users with email or phone number.
-    """
-
+   
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
-    # Remove the unused _validate_email method as authenticate is used in validate
-    # def _validate_email(self, email, password):
-    #     user = None
-    #     if email and password:
-    #         user = authenticate(username=email, password=password)
-    #     else:
-    #         raise serializers.ValidationError(
-    #             _("Enter an email and password.")
-    #         )
-    #     return user
+
 
     def validate(self, validated_data):
         email = validated_data.get("email")
         password = validated_data.get("password")
 
         if email and password:
-            # Authenticate with email and password
+            
             user = authenticate(username=email, password=password)
         else:
             raise serializers.ValidationError(
@@ -182,26 +166,20 @@ class UserLoginSerializer(serializers.Serializer):
         validated_data["user"] = user
         return validated_data
 class ProfileSerializer(serializers.ModelSerializer):
-    """
-    Serializer class to serialize the user Profile model
-    """
-
+    
     class Meta:
         model = Profile
         fields = (
             "avatar",
             "bio",
-            "phone_number",  # Added phone_number field
+            "phone_number",  
             "created_at",
             "updated_at",
         )
 
 
 class AddressReadOnlySerializer(CountryFieldMixin, serializers.ModelSerializer):
-    """
-    Serializer class to serialize Address model
-    """
-
+   
     user = serializers.CharField(source="user.get_full_name", read_only=True)
 
     class Meta:
@@ -210,9 +188,7 @@ class AddressReadOnlySerializer(CountryFieldMixin, serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """
-    Serializer class to serialize User model
-    """
+   
 
     profile = ProfileSerializer(read_only=True)
     addresses = AddressReadOnlySerializer(read_only=True, many=True)
@@ -231,9 +207,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ShippingAddressSerializer(CountryFieldMixin, serializers.ModelSerializer):
-    """
-    Serializer class to serialize address of type shipping
-    """
+   
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -258,10 +232,7 @@ class ShippingAddressSerializer(CountryFieldMixin, serializers.ModelSerializer):
 
 
 class BillingAddressSerializer(CountryFieldMixin, serializers.ModelSerializer):
-    """
-    Serializer class to serialize address of type billing
-    """
-
+    
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:

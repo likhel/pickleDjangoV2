@@ -18,4 +18,3 @@ class InvalidCredentialsException(APIException):
     default_detail = _('Invalid credentials.')
     default_code = 'invalid_credentials'
 
-# Add other custom exceptions if needed
