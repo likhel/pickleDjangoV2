@@ -43,9 +43,7 @@ class Order(models.Model):
 
     @cached_property
     def total_cost(self):
-        """
-        Total cost of all the items in an order
-        """
+      
         return round(sum([order_item.cost for order_item in self.order_items.all()]), 2)
 
 
@@ -69,9 +67,6 @@ class OrderItem(models.Model):
 
     @cached_property
     def cost(self):
-        """
-        Total cost of the ordered item
-        """
+      
         return round(self.quantity * self.product.price, 2)
 
-# Create your models here.

@@ -11,11 +11,9 @@ from product.models import Product
 User = get_user_model()
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    """
-    Serializer class for serializing order items
-    """
+  
 
-    product = ProductReadSerializer(read_only=True) # Use the ProductSerializer to display product details
+    product = ProductReadSerializer(read_only=True)
     price = serializers.SerializerMethodField()
     cost = serializers.SerializerMethodField()
 
@@ -31,12 +29,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("order", "price", "cost") # price and cost are calculated fields
-
+        read_only_fields = ("order", "price", "cost") 
     def validate(self, validated_data):
         order_quantity = validated_data["quantity"]
         product = validated_data["product"]
-        product_quantity = product.stock # Use stock instead of quantity
+        product_quantity = product.stock
 
         order_id = self.context["view"].kwargs.get("order_id")
         current_item = OrderItem.objects.filter(order__id=order_id, product=product)
@@ -49,8 +46,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             error = {"product": _("Product already exists in your order.")}
             raise serializers.ValidationError(error)
         
-        # Check if the user is trying to add their own product
-        # This requires access to the request object, which is available in the serializer context
+       
         request = self.context.get('request', None)
         if request and request.user == product.seller:
              error = _("Adding your own product to your order is not allowed")
@@ -67,11 +63,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderReadSerializer(serializers.ModelSerializer):
-    """
-    Serializer class for reading orders
-    """
+  
 
-    buyer = serializers.CharField(source="buyer.username", read_only=True) # Use username for consistency
+    buyer = serializers.CharField(source="buyer.username", read_only=True) 
     order_items = OrderItemSerializer(read_only=True, many=True)
     total_cost = serializers.SerializerMethodField(read_only=True)
     shipping_address = AddressReadOnlySerializer(read_only=True) 
@@ -97,15 +91,10 @@ class OrderReadSerializer(serializers.ModelSerializer):
 
 
 class OrderWriteSerializer(serializers.ModelSerializer):
-    """
-    Serializer class for creating orders and order items
 
-    Shipping address, billing address and payment are not included here
-    They will be created/updated on checkout
-    """
 
     buyer = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    # Use a different serializer for writing OrderItems that allows product and quantity input
+  
     order_items = serializers.ListField(child=serializers.DictField(), write_only=True)
 
 
@@ -137,16 +126,15 @@ class OrderWriteSerializer(serializers.ModelSerializer):
             except Product.DoesNotExist:
                 raise serializers.ValidationError(_(f"Product with ID {product_id} does not exist."))
 
-            # Validate quantity against stock
+          
             if quantity > product.stock:
                  raise serializers.ValidationError(_(f"Ordered quantity for product {product.name} is more than the stock."))
 
-            # Check if the user is trying to add their own product
             request = self.context.get('request', None)
             if request and request.user == product.seller:
                  raise PermissionDenied(_("Adding your own product to your order is not allowed"))
 
-            # Check if the product already exists in the order
+            
             if OrderItem.objects.filter(order=order, product=product).exists():
                  raise serializers.ValidationError(_(f"Product {product.name} already exists in this order."))
 
@@ -155,14 +143,14 @@ class OrderWriteSerializer(serializers.ModelSerializer):
         return order
 
     def update(self, instance, validated_data):
-        # Update order fields
+        
         instance.status = validated_data.get('status', instance.status)
         instance.save()
 
-        # Update or create order items
+        
         order_items_data = validated_data.get("order_items")
         if order_items_data:
-            # Get existing order items
+           
             existing_items = {item.product.id: item for item in instance.order_items.all()}
             
             for item_data in order_items_data:
@@ -177,30 +165,28 @@ class OrderWriteSerializer(serializers.ModelSerializer):
                 except Product.DoesNotExist:
                     raise serializers.ValidationError(_(f"Product with ID {product_id} does not exist."))
                 
-                # Validate quantity against stock (considering existing quantity in the order)
+                
                 current_item_quantity = existing_items[product_id].quantity if product_id in existing_items else 0
-                if quantity > product.stock + current_item_quantity: # Add existing quantity to stock for validation
+                if quantity > product.stock + current_item_quantity:
                     raise serializers.ValidationError(_(f"Ordered quantity for product {product.name} is more than the stock."))
 
-                # Check if the user is trying to add their own product
+               
                 request = self.context.get('request', None)
                 if request and request.user == product.seller:
                      raise PermissionDenied(_("Adding your own product to your order is not allowed"))
 
                 if product_id in existing_items:
-                    # Update existing item
+                   
                     item = existing_items[product_id]
                     item.quantity = quantity
                     item.save()
                 else:
-                    # Create new item
+                  
                     OrderItem.objects.create(order=instance, product=product, quantity=quantity)
 
                
 
-            # You might want to handle deleting items not in the update data,
-            # but for this refactor, we'll focus on updating and creating.
-            # If you need deletion, let me know and I can add that logic.
+         
 
         return instance
     
