@@ -52,7 +52,8 @@ class SellerProfileInline(admin.StackedInline):
 
 
 class CustomUserAdmin(UserAdmin):
-    inlines = (ProfileInline, AddressInline,SellerProfileInline,) 
+    # inlines = (ProfileInline, AddressInline,SellerProfileInline,) 
+    model = CustomUser
     list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff', 'is_active',) 
     list_filter = ('role', 'is_staff', 'is_active',) 
     search_fields = ('email', 'first_name', 'last_name',) 
@@ -67,11 +68,22 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = ( 
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password'),
+            'fields': ('email', 'password1','password2',
+                ),
         }),
         ('Personal info', {'fields': ('first_name', 'last_name', 'role')}), # Include 'role' here
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )
+    exclude = ('username',)
+
+    def get_inline_instances(self, request, obj=None):
+        """Return inlines conditionally based on role."""
+        inlines = [ProfileInline(self.model, self.admin_site), AddressInline(self.model, self.admin_site)]
+
+        if obj and obj.role == "seller":  # Only show SellerProfile for sellers
+            inlines.append(SellerProfileInline(self.model, self.admin_site))
+
+        return inlines
 
 
 

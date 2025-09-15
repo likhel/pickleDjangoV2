@@ -13,8 +13,10 @@ class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
     permission_classes = (permissions.AllowAny,)
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category_type']
+    search_fields = ['name']  # if you have a name field
+    ordering_fields = ['name', 'id']  # adjust to your model fields
 
 
 class ProductPagination(PageNumberPagination):

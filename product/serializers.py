@@ -18,6 +18,7 @@ class ProductReadSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "seller",
+            "name",
             "categories",
             "slug",
             "description",
