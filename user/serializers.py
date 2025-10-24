@@ -27,7 +27,7 @@ class UserRegistrationSerializer(RegisterSerializer):
     first_name = serializers.CharField(required=True, write_only=True)
     last_name = serializers.CharField(required=True, write_only=True)
     email = serializers.EmailField(required=True)
-    phone_number = serializers.CharField(required=False, write_only=True)
+    phone_number = serializers.CharField(required=False, write_only=True, allow_blank=True)
 
     def validate(self, validated_data):
         email = validated_data.get("email", None)

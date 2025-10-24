@@ -27,10 +27,10 @@ router.register(r'seller-profiles', SellerProfileViewSet, basename='seller-profi
 
 urlpatterns = [
 
-    path('', include('dj_rest_auth.urls')),
+    # path('', include('dj_rest_auth.urls')),
 
     
-    path('registration/', UserRegisterationAPIView.as_view(), name='rest_register'),
+    # path('registration/', UserRegisterationAPIView.as_view(), name='rest_register'),
 
  
     # path('login/', UserLoginAPIView.as_view(), name='rest_login'),

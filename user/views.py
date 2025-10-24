@@ -48,11 +48,16 @@ class UserRegisterationAPIView(RegisterView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        
+        # Debug: Print validation errors
+        if not serializer.is_valid():
+            print("Validation errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        response_data = {"detail": _("Verification e-mail sent.")}
+        response_data = {"detail": _("Registration successful. Email verification disabled for testing.")}
 
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
     
